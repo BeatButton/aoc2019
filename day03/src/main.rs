@@ -27,15 +27,15 @@ impl Hash for Point {
     }
 }
 
-fn wires_to_point_set<'a, I>(wires: I) -> HashSet<Point>
+fn segments_to_point_set<'a, I>(segments: I) -> HashSet<Point>
 where
     I: IntoIterator<Item = &'a str>,
 {
     let mut points = HashSet::default();
     let (mut x, mut y) = (0, 0);
     let mut d = 0;
-    for wire in wires {
-        let mut iter = wire.chars();
+    for segment in segments {
+        let mut iter = segment.chars();
         let direction = iter.next().expect("wire had no direction");
         let distance = iter
             .collect::<String>()
@@ -62,8 +62,8 @@ where
 
 fn main() {
     let mut iter = INPUT.split('\n');
-    let wire1 = wires_to_point_set(iter.next().expect("no 1st wire").split(','));
-    let wire2 = wires_to_point_set(iter.next().expect("no 2nd wire").split(','));
+    let wire1 = segments_to_point_set(iter.next().expect("no 1st wire").split(','));
+    let wire2 = segments_to_point_set(iter.next().expect("no 2nd wire").split(','));
     let intersections = wire1.intersection(&wire2);
     let answer = intersections
         .map(|p| {
