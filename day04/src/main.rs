@@ -38,12 +38,6 @@ fn is_non_decreasing(mut n: usize) -> bool {
 }
 
 fn main() {
-    println!("{}", has_exactly_two_adjacent_digit(11));
-    println!("{}", has_exactly_two_adjacent_digit(111));
-    println!("{}", has_exactly_two_adjacent_digit(1221));
-    println!("{}", has_exactly_two_adjacent_digit(1122));
-    println!("{}", has_exactly_two_adjacent_digit(1112222));
-
     println!(
         "{}",
         (MIN..=MAX).filter(|&password| is_valid(password)).count()
