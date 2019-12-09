@@ -10,7 +10,7 @@ fn main() {
             data[2] = verb;
             let mut cpu = Computer::from_data(data);
             cpu.run();
-            if cpu.data[0] == 19690720 {
+            if cpu.data[&0] == 19690720 {
                 println!("{}", 100 * noun + verb);
                 return;
             }
