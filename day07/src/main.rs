@@ -13,13 +13,13 @@ fn main() {
 
         let mut send: Vec<Option<Tx>> = vec![];
         let mut recv: Vec<Option<Rx>> = vec![];
-        for _ in 0..5 {
+        for _ in 0..6 {
             let (tx, rx) = mpsc::channel();
             send.push(Some(tx));
             recv.push(Some(rx));
         }
 
-        for i in 4..=0 {
+        for i in (0..5).rev() {
             let cpu = Computer::from_data_with_custom_io(
                 SOURCE.to_vec(),
                 recv[i].take().unwrap(),
@@ -30,7 +30,7 @@ fn main() {
         }
 
         let tx = send[0].take().unwrap();
-        let rx = recv[4].take().unwrap();
+        let rx = recv[5].take().unwrap();
 
         while let Ok(()) = tx.send(last_signal) {
             last_signal = rx.recv().expect("failed to receive signal");
