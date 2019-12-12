@@ -25,7 +25,7 @@ impl Robot {
             facing: Direction::North,
             x: 0,
             y: 0,
-            painted_panels: painted_panels,
+            painted_panels,
         }
     }
 
