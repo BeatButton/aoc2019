@@ -1,28 +1,24 @@
-use fnv::{FnvHashSet as HashSet, FnvHasher};
-use rayon::prelude::*;
+use num_integer::Integer;
 
-use std::{
-    cmp::Ordering,
-    hash::{Hash, Hasher},
-};
+use std::cmp::Ordering;
 
 const INPUT: &str = include_str!("input");
 
-#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default)]
 struct Position {
     x: i64,
     y: i64,
     z: i64,
 }
 
-#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default)]
 struct Velocity {
     x: i64,
     y: i64,
     z: i64,
 }
 
-#[derive(Clone, Copy, Debug, Default, Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default)]
 struct Moon {
     position: Position,
     velocity: Velocity,
@@ -51,7 +47,7 @@ impl Moon {
     }
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 struct System {
     moons: Vec<Moon>,
 }
@@ -59,32 +55,32 @@ struct System {
 impl System {
     #[allow(unused)]
     fn energy(&self) -> i64 {
-        self.moons.par_iter().map(|moon| moon.energy()).sum()
+        self.moons.iter().map(|moon| moon.energy()).sum()
+    }
+
+    fn update_one_velocity(new_vel: &mut i64, new_pos: &mut i64, old_pos: i64) {
+        *new_vel += match old_pos.cmp(&new_pos) {
+            Ordering::Greater => 1,
+            Ordering::Less => -1,
+            Ordering::Equal => 0,
+        };
     }
 
     fn step(&mut self) {
-        let update_one_velocity = |new_vel: &mut i64, new_pos: &mut i64, old_pos: i64| {
-            *new_vel += match old_pos.cmp(&new_pos) {
-                Ordering::Greater => 1,
-                Ordering::Less => -1,
-                Ordering::Equal => 0,
-            };
-        };
-
         let old_moons = self.moons.clone();
-        self.moons.par_iter_mut().for_each(|moon| {
+        self.moons.iter_mut().for_each(|moon| {
             for old_moon in &old_moons {
-                update_one_velocity(
+                Self::update_one_velocity(
                     &mut moon.velocity.x,
                     &mut moon.position.x,
                     old_moon.position.x,
                 );
-                update_one_velocity(
+                Self::update_one_velocity(
                     &mut moon.velocity.y,
                     &mut moon.position.y,
                     old_moon.position.y,
                 );
-                update_one_velocity(
+                Self::update_one_velocity(
                     &mut moon.velocity.z,
                     &mut moon.position.z,
                     old_moon.position.z,
@@ -99,6 +95,43 @@ impl System {
         for _ in 0..steps {
             self.step()
         }
+    }
+
+    fn steps_to_equillibrium(&self) -> usize {
+        let xs: Vec<(i64, i64)> = self
+            .moons
+            .iter()
+            .map(|moon| (moon.position.x, moon.velocity.x))
+            .collect();
+        let ys: Vec<(i64, i64)> = self
+            .moons
+            .iter()
+            .map(|moon| (moon.position.y, moon.velocity.y))
+            .collect();
+        let zs: Vec<(i64, i64)> = self
+            .moons
+            .iter()
+            .map(|moon| (moon.position.z, moon.velocity.z))
+            .collect();
+        let one_dim_steps = |mut xs: Vec<(i64, i64)>| {
+            let initial = xs.clone();
+            for step in 1.. {
+                let old_xs = xs.clone();
+                xs.iter_mut().for_each(|(d, v)| {
+                    for (old_d, _) in &old_xs {
+                        Self::update_one_velocity(v, d, *old_d)
+                    }
+                    *d += *v;
+                });
+                if xs == initial {
+                    return step;
+                }
+            }
+            0
+        };
+        let dims = vec![xs, ys, zs];
+        let steps: Vec<usize> = dims.into_iter().map(|xs| one_dim_steps(xs)).collect();
+        steps.into_iter().fold(1, |acc, step| acc.lcm(&step))
     }
 }
 
@@ -127,15 +160,6 @@ fn main() {
             Moon { position, velocity }
         })
         .collect();
-    let mut system = System { moons };
-    let mut seen_states: HashSet<u64> = HashSet::default();
-    for step in 0.. {
-        let mut hasher = FnvHasher::default();
-        system.hash(&mut hasher);
-        if !seen_states.insert(hasher.finish()) {
-            println!("{}", step);
-            break;
-        }
-        system.step();
-    }
+    let system = System { moons };
+    println!("{}", system.steps_to_equillibrium());
 }
