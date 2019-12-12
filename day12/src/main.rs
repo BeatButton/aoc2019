@@ -140,20 +140,33 @@ fn main() {
         .lines()
         .map(|line| {
             let mut line = line.chars();
-            line.by_ref().take_while(|&ch| ch != '=').for_each(|_| {});
 
-            let x: String = line.by_ref().take_while(|&ch| ch != ',').collect();
-            let x: i64 = x.parse().unwrap();
+            let x: i64 = line
+                .by_ref()
+                .skip_while(|&ch| ch != '=')
+                .skip(1)
+                .take_while(|&ch| ch != ',')
+                .collect::<String>()
+                .parse()
+                .unwrap();
 
-            line.by_ref().take_while(|&ch| ch != '=').for_each(|_| {});
+            let y: i64 = line
+                .by_ref()
+                .skip_while(|&ch| ch != '=')
+                .skip(1)
+                .take_while(|&ch| ch != ',')
+                .collect::<String>()
+                .parse()
+                .unwrap();
 
-            let y: String = line.by_ref().take_while(|&ch| ch != ',').collect();
-            let y: i64 = y.parse().unwrap();
-
-            line.by_ref().take_while(|&ch| ch != '=').for_each(|_| {});
-
-            let z: String = line.by_ref().take_while(|&ch| ch != '>').collect();
-            let z: i64 = z.parse().unwrap();
+            let z: i64 = line
+                .by_ref()
+                .skip_while(|&ch| ch != '=')
+                .skip(1)
+                .take_while(|&ch| ch != '>')
+                .collect::<String>()
+                .parse()
+                .unwrap();
 
             let position = Position { x, y, z };
             let velocity = Default::default();
