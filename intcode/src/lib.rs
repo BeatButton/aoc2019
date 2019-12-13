@@ -5,7 +5,7 @@ use std::{sync::mpsc, thread};
 const POWERS_OF_10_FROM_100: [i64; 3] = [100, 1000, 10000];
 
 pub type Rx = mpsc::Receiver<i64>;
-pub type Tx = mpsc::Sender<i64>;
+pub type Tx = mpsc::SyncSender<i64>;
 
 #[derive(Debug)]
 pub struct Computer {
@@ -19,13 +19,13 @@ pub struct Computer {
 
 impl Computer {
     pub fn from_data(data: Vec<i64>) -> Self {
-        let (output, input) = mpsc::channel();
+        let (output, input) = mpsc::sync_channel(0);
         Self::from_data_with_custom_io(data, input, output)
     }
 
     pub fn from_data_with_io(data: Vec<i64>) -> (Self, Rx, Tx) {
-        let (output, extern_rx) = mpsc::channel();
-        let (extern_tx, input) = mpsc::channel();
+        let (output, extern_rx) = mpsc::sync_channel(0);
+        let (extern_tx, input) = mpsc::sync_channel(0);
 
         (
             Self::from_data_with_custom_io(data, input, output),

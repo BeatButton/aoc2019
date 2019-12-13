@@ -14,7 +14,7 @@ fn main() {
         let mut send: Vec<Option<Tx>> = vec![];
         let mut recv: Vec<Option<Rx>> = vec![];
         for _ in 0..6 {
-            let (tx, rx) = mpsc::channel();
+            let (tx, rx) = mpsc::sync_channel(0);
             send.push(Some(tx));
             recv.push(Some(rx));
         }
